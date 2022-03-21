@@ -4,15 +4,17 @@ import scene from "../base/scene";
 import Laser from "../objects/laser";
 
 class Enemy {
-  constructor(position) {
+  constructor(position, updateUserHp) {
+    this.updateUserHp = updateUserHp;
     const enemyHeight = 2;
     const object = new THREE.Mesh(new THREE.BoxGeometry(1, enemyHeight, 1));
     object.name = "enemy";
     object.position.set(position.x, enemyHeight / 2, position.z);
+    object.hp = 100;
     this.object = object;
     this.id = object.uuid;
     scene.add(object);
-    this.shootInterval = 2;
+    this.shootInterval = 1 + 2 * Math.random();
     this.lastShotAt = 0;
     const raycaster = new THREE.Raycaster();
     this.raycaster = raycaster;
@@ -33,7 +35,7 @@ class Enemy {
       player.object.position.z
     );
     this.lastShotAt = elapsedTime;
-    const laser = new Laser(this.object.position, true);
+    const laser = new Laser(this.object.position, true, this.updateUserHp);
     laser.shoot([
       {
         distance: origin.distanceTo(direction),
@@ -44,8 +46,8 @@ class Enemy {
   }
 
   move(elapsedTime) {
-    this.object.position.x = this.moveX * Math.sin(elapsedTime);
-    this.object.position.z = this.moveZ * Math.sin(elapsedTime);
+    this.object.position.x += this.moveX * Math.sin(elapsedTime);
+    this.object.position.z += this.moveZ * Math.sin(elapsedTime);
   }
 }
 

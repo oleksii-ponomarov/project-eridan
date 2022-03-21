@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-import gui from "./gui";
+import { debug } from "./gui";
 
 export const sizes = {
   width: window.innerWidth,
@@ -27,17 +27,18 @@ const camera = new THREE.PerspectiveCamera(
   150
 );
 camera.rotation.order = "YXZ";
+camera.rotation.y = Math.PI;
 
 export const listener = new THREE.AudioListener();
 camera.add(listener);
 
-gui
+debug
   .add(cameraParameters, "playerHeight")
   .min(0.2)
   .max(2)
   .step(0.01)
   .onChange(() => (camera.position.y = parameters.playerHeight));
-gui.add(cameraParameters, "mouseSensitivity").min(0.001).max(1).step(0.001);
-gui.add(cameraParameters, "zeroZone").min(0).max(0.5).step(0.01);
+debug.add(cameraParameters, "mouseSensitivity").min(0.001).max(1).step(0.001);
+debug.add(cameraParameters, "zeroZone").min(0).max(0.5).step(0.01);
 
 export default camera;

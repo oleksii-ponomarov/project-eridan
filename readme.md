@@ -1,6 +1,9 @@
 # FPS Shooter
 This FPS shooter game is created as a spin-off from the [Three.js Journey](https://threejs-journey.com) course by [Bruno Simon](https://bruno-simon.com)
 
+## Textures
+- [Skybox texture](https://www.deviantart.com/cosmicspark/art/Blender-Space-Skybox-15-865292177) (C) by [cosmicspark](https://www.deviantart.com/cosmicspark) from <https://www.deviantart.com>
+
 ## Setup
 Download [Node.js](https://nodejs.org/en/download/).
 Run this followed commands:

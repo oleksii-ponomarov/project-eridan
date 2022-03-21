@@ -5,6 +5,7 @@ import { cameraParameters, listener } from "./camera";
 import scene from "./scene";
 import Laser from "../objects/laser";
 import { audioLoader } from "./loader";
+import { setHp } from "./gui";
 
 let jumpStartBuffer;
 let jumpEndBuffer;
@@ -16,7 +17,9 @@ audioLoader.load("./sounds/jump-end.mp3", (buffer) => {
 });
 
 class Player {
-  constructor(camera) {
+  constructor(camera, killEnemyHandler) {
+    this.killEnemyHandler = killEnemyHandler;
+
     this.walkingForward = false;
     this.walkingBackward = false;
     this.strifeLeft = false;
@@ -24,6 +27,8 @@ class Player {
     this.sprint = false;
     this.crawl = false;
     this.inTheAir = false;
+
+    this.hp = 100;
 
     const player = new THREE.Group();
     player.position.y = cameraParameters.playerHeight;
@@ -167,7 +172,7 @@ class Player {
   }
 
   shoot(targets) {
-    const laser = new Laser(this.object.position);
+    const laser = new Laser(this.object.position, false, this.killEnemyHandler);
     laser.shoot(targets);
   }
 
@@ -189,6 +194,11 @@ class Player {
     if (this.strifeRight) {
       this.doMove(deltaTime, Math.PI * 0.5, speed);
     }
+  }
+
+  updateHp() {
+    this.hp -= 10;
+    setHp(this.hp);
   }
 }
 

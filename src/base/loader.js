@@ -1,5 +1,7 @@
 import * as THREE from "three";
 
+import { initializeGui } from "./gui";
+
 const loading = document.createElement("div");
 const loadingText = document.createElement("p");
 const loadingProgress = document.createElement("div");
@@ -15,32 +17,12 @@ function initializeLoading() {
   loading.appendChild(loadingProgress);
 }
 
-function initializeGui() {
-  const statusBar = document.createElement("div");
-  statusBar.classList.add("status-bar");
-  const actualInfo = document.createElement("p");
-  const statusText = document.createElement("span");
-  statusText.textContent = "Рівень: ";
-  const statusLevel = document.createElement("span");
-  statusLevel.classList.add("level");
-  actualInfo.append(statusText, statusLevel);
-  statusBar.append(actualInfo);
-
-  const info = document.createElement("a");
-  info.setAttribute("href", "./info");
-  info.classList.add("info");
-  info.textContent = "Info";
-
-  document.body.append(statusBar, info);
-}
-
 initializeLoading();
 
 export const loadingManager = new THREE.LoadingManager();
 
 loadingManager.onStart = (data) => {
   document.body.appendChild(loading);
-  console.log(data);
 };
 
 loadingManager.onProgress = (fileName, index, total) => {

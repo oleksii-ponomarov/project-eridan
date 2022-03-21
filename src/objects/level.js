@@ -1,14 +1,14 @@
 import * as THREE from "three";
 
-const levelParameters = {
+export const levelParameters = {
   size: 30,
-  wallHeight: 2,
+  wallHeight: 3,
 };
 
 class Level {
   constructor() {
-    const wallsMaterial = new THREE.MeshStandardMaterial({ color: 0x55ff88 });
-    const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x33fa46 });
+    const wallsMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
     const wallsGeometry = new THREE.PlaneGeometry(
       levelParameters.size,
       levelParameters.wallHeight

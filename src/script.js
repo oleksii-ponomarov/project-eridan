@@ -3,7 +3,6 @@ import * as THREE from "three";
 
 import camera, { sizes } from "./base/camera";
 import Game from "./base/game";
-import Player from "./base/player";
 import objects, { animateObjects } from "./objects/objects";
 import light from "./base/light";
 import scene from "./base/scene";
@@ -13,8 +12,7 @@ import { onLoad, loadingManager } from "./base/loader";
 const canvas = document.querySelector("canvas.webgl");
 
 scene.add(light, camera, ...objects);
-const player = new Player(camera);
-const game = new Game(player);
+const game = new Game();
 
 loadingManager.onLoad = () => {
   onLoad();
@@ -58,8 +56,7 @@ const tick = () => {
   game.updateAim();
   game.updateCamera();
   game.attackPlayer(elapsedTime);
-  game.animateEnemies(elapsedTime);
-  player.walk(deltaTime);
+  game.player.walk(deltaTime);
 
   // Render
   renderer.render(scene, camera);

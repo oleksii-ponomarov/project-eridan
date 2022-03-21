@@ -5,12 +5,12 @@ import material from "./material";
 
 const sphere = new THREE.Mesh(new THREE.SphereGeometry(3, 32, 32), material);
 sphere.position.x = -6;
-sphere.position.z = -5;
+sphere.position.z = 5;
 sphere.position.y = 3;
 sphere.geometry.computeVertexNormals();
 
 const cube = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), material);
-cube.position.z = -5;
+cube.position.z = 5;
 cube.position.y = 3;
 cube.geometry.computeVertexNormals();
 
@@ -18,7 +18,7 @@ const torus = new THREE.Mesh(
   new THREE.TorusGeometry(1.5, 0.75, 32, 64),
   material
 );
-torus.position.z = -3;
+torus.position.z = 10;
 torus.position.x = 5;
 torus.position.y = 3;
 torus.geometry.computeVertexNormals();

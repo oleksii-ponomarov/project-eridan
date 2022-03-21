@@ -16,7 +16,8 @@ audioLoader.load("./sounds/laser2.mp3", (buffer) => {
 });
 
 class Laser {
-  constructor(origin, enemy = false) {
+  constructor(origin, enemy = false, killEnemyHandler) {
+    this.killEnemyHandler = killEnemyHandler;
     this.origin = origin;
     const laser = new THREE.Mesh(
       new THREE.CylinderGeometry(0.03, 0.03, 0.75, 16, 16),
@@ -94,6 +95,9 @@ class Laser {
   }
 
   hit(target) {
+    if (target.object.name === "skybox") {
+      return;
+    }
     const explosion = new Explosion(
       scene,
       0.1,
@@ -101,15 +105,22 @@ class Laser {
       target.face?.normal
     );
     explosion.bang();
-    if (target.object.name === "object") {
+    if (["object", "enemy"].includes(target.object.name)) {
       target.object.hp -= 10;
       if (target.object.hp <= 0) {
         const objectExplosion = new Explosion(scene, 5, target.object.position);
+        target.object.name === "enemy" &&
+          this.killEnemyHandler(target.object.uuid);
         objectExplosion.bang();
         scene.remove(target.object);
       }
     }
     if (target.object.name === "player") {
+      target.object.hp -= 10;
+      this.killEnemyHandler();
+      if (target.object.hp <= 0) {
+        console.log("you`re dead");
+      }
     }
   }
 }

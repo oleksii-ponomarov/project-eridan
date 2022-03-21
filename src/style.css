@@ -1,6 +1,18 @@
+@font-face {
+  font-family: "Orbitron";
+  font-weight: 400;
+  font-style: normal;
+  src: url("../static/Orbitron-Regular.ttf") format("truetype");
+}
+
 * {
   margin: 0;
   padding: 0;
+}
+
+body {
+  font-family: "Orbitron", sans-serif;
+  --hud-color: #ffc700;
 }
 
 html,
@@ -19,6 +31,8 @@ body {
 .gui {
   width: 100vw;
   height: 100vh;
+  color: var(--hud-color);
+  user-select: none;
 }
 
 .crosshair {
@@ -26,7 +40,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  fill: #ffc700;
+  fill: var(--hud-color);
 }
 
 .loading {
@@ -36,18 +50,34 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 40px;
+  color: #ffffff;
+  text-align: center;
 }
 
 .loading-progress {
   margin-top: 10px;
-  border: 2px solid #fdd526;
+  border: 2px solid #ffffff;
+  padding: 1px;
   border-radius: 3px;
-  min-width: 192px;
 }
 
 .loading-bar {
   height: 5px;
-  background-color: #005bbb;
-  width: 0;
+  background-color: #ffffff;
   transition: width 0.3s;
+}
+
+.hp {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  padding: 10px;
+  font-size: 2.5rem;
+}
+
+.hp::before {
+  content: "✚";
+  font-size: 2rem;
+  vertical-align: middle;
+  margin-right: 0.5rem;
 }

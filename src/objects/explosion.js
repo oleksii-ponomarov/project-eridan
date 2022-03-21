@@ -51,7 +51,7 @@ class Explosion {
     explosionSound.setBuffer(
       size < 1 ? smallExplosionBuffer : largeExplosionBuffer
     );
-    explosionSound.setRefDistance(5);
+    explosionSound.setRefDistance(size < 1 ? 1 : 5);
     explosion.add(explosionSound);
     this.sound = explosionSound;
 

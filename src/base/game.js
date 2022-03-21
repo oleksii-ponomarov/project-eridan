@@ -2,29 +2,29 @@ import * as THREE from "three";
 
 import scene from "./scene";
 import objects from "../objects/objects";
-import { cameraParameters } from "./camera";
+import camera, { cameraParameters } from "./camera";
+import { debug } from "./gui";
 import Enemy from "../objects/enemy";
 import Level from "../objects/level";
-import gui from "./gui";
+import Skybox from "../objects/skybox";
+import Player from "./player";
 
 const parameters = {
-  attack: false,
+  attack: true,
   moveEnemies: false,
+  enableMouse: true,
 };
 
-gui.add(parameters, "attack");
-gui.add(parameters, "moveEnemies");
+debug.add(parameters, "attack");
+debug.add(parameters, "moveEnemies");
 
 class Game {
-  constructor(player) {
+  constructor() {
     for (const object of objects) {
       object.name = "object";
       object.hp = 100;
     }
-    const skybox = new THREE.Mesh(
-      new THREE.SphereGeometry(100, 16, 16),
-      new THREE.MeshBasicMaterial({ color: 0x0000, side: THREE.BackSide })
-    );
+    const skybox = new Skybox();
     this.skybox = skybox;
     const raycaster = new THREE.Raycaster();
     this.raycaster = raycaster;
@@ -35,7 +35,6 @@ class Game {
     scene.add(level);
     this.level = level;
 
-    this.player = player;
     this.cursor = { x: 0, y: 0 };
     window.addEventListener("mousemove", (e) =>
       this.handleMouseMove.call(this, e)
@@ -47,15 +46,21 @@ class Game {
 
     const enemiesNo = Math.random() * 4;
     this.enemies = [];
-    for (let i = 0; i < 1; i++) {
-      const enemy = new Enemy({
-        x: (0.5 - Math.random()) * 20,
-        z: (0.5 - Math.random()) * 20,
-      });
+    for (let i = 0; i < enemiesNo; i++) {
+      const enemy = new Enemy(
+        {
+          x: (0.5 - Math.random()) * 20,
+          z: (0.5 - Math.random()) * 20,
+        },
+        () => this.player.updateHp()
+      );
       this.enemies.push(enemy);
     }
 
-    console.log(this.enemies);
+    const player = new Player(camera, (id) => {
+      this.killEnemy(id);
+    });
+    this.player = player;
 
     return this;
   }
@@ -72,6 +77,9 @@ class Game {
   handleKeyDown(e) {
     e.stopPropagation();
     const key = e.key.toLowerCase();
+    if (key === "m") {
+      parameters.enableMouse = !parameters.enableMouse;
+    }
     if (key === "f") {
       this.player.toogleFlashlight();
     }
@@ -181,25 +189,27 @@ class Game {
   }
 
   updateCamera() {
-    if (
-      this.cursor.x > cameraParameters.zeroZone ||
-      this.cursor.x < -cameraParameters.zeroZone
-    ) {
-      this.player.camera.rotation.y -=
-        this.cursor.x * cameraParameters.mouseSensitivity;
-      this.player.camera.rotation.y =
-        this.player.camera.rotation.y % (Math.PI * 2);
-    }
+    if (parameters.enableMouse) {
+      if (
+        this.cursor.x > cameraParameters.zeroZone ||
+        this.cursor.x < -cameraParameters.zeroZone
+      ) {
+        this.player.camera.rotation.y -=
+          this.cursor.x * cameraParameters.mouseSensitivity;
+        this.player.camera.rotation.y =
+          this.player.camera.rotation.y % (Math.PI * 2);
+      }
 
-    if (
-      this.cursor.y > cameraParameters.zeroZone ||
-      this.cursor.y < -cameraParameters.zeroZone
-    ) {
-      const newRotationX =
-        this.player.camera.rotation.x +
-        this.cursor.y * cameraParameters.mouseSensitivity;
-      if (newRotationX < Math.PI * 0.5 && newRotationX > -Math.PI * 0.5) {
-        this.player.camera.rotation.x = newRotationX;
+      if (
+        this.cursor.y > cameraParameters.zeroZone ||
+        this.cursor.y < -cameraParameters.zeroZone
+      ) {
+        const newRotationX =
+          this.player.camera.rotation.x +
+          this.cursor.y * cameraParameters.mouseSensitivity;
+        if (newRotationX < Math.PI * 0.5 && newRotationX > -Math.PI * 0.5) {
+          this.player.camera.rotation.x = newRotationX;
+        }
       }
     }
   }
@@ -214,10 +224,8 @@ class Game {
     }
   }
 
-  animateEnemies(elapsedTime) {
-    for (const enemy of this.enemies) {
-      enemy.move(elapsedTime);
-    }
+  killEnemy(id) {
+    this.enemies = this.enemies.filter((enemy) => enemy.id !== id);
   }
 }
 
