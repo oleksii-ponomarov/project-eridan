@@ -13,6 +13,7 @@ const parameters = {
   attack: true,
   moveEnemies: false,
   enableMouse: true,
+  paused: false,
 };
 
 debug.add(parameters, "attack");
@@ -52,13 +53,16 @@ class Game {
           x: (0.5 - Math.random()) * 20,
           z: (0.5 - Math.random()) * 20,
         },
-        () => this.player.updateHp()
+        {
+          woundPlayer: () => this.player.wound(),
+          pauseGame: () => this.pause(),
+        }
       );
       this.enemies.push(enemy);
     }
 
-    const player = new Player(camera, (id) => {
-      this.killEnemy(id);
+    const player = new Player(camera, {
+      killEnemy: (id) => this.killEnemy(id),
     });
     this.player = player;
 
@@ -71,12 +75,21 @@ class Game {
   }
 
   handleClick() {
+    if (parameters.paused) {
+      return;
+    }
     this.player.shoot(this.currentIntersect);
   }
 
   handleKeyDown(e) {
     e.stopPropagation();
     const key = e.key.toLowerCase();
+    if (parameters.paused) {
+      return;
+    }
+    if (key === "z") {
+      debug._hidden ? debug.show() : debug.hide();
+    }
     if (key === "m") {
       parameters.enableMouse = !parameters.enableMouse;
     }
@@ -134,7 +147,9 @@ class Game {
 
   handleKeyUp(e) {
     const key = e.key.toLowerCase();
-
+    if (parameters.paused) {
+      return;
+    }
     if (key === "shift") {
       this.player.endMove("sprint");
     }
@@ -189,6 +204,9 @@ class Game {
   }
 
   updateCamera() {
+    if (parameters.paused) {
+      return;
+    }
     if (parameters.enableMouse) {
       if (
         this.cursor.x > cameraParameters.zeroZone ||
@@ -215,6 +233,9 @@ class Game {
   }
 
   attackPlayer(elapsedTime) {
+    if (parameters.paused) {
+      return;
+    }
     if (parameters.attack) {
       for (const enemy of this.enemies) {
         if (elapsedTime > enemy.lastShotAt + enemy.shootInterval) {
@@ -226,6 +247,15 @@ class Game {
 
   killEnemy(id) {
     this.enemies = this.enemies.filter((enemy) => enemy.id !== id);
+  }
+
+  pause() {
+    this.player.endAllMoves();
+    parameters.paused = true;
+  }
+
+  resume() {
+    parameters.paused = false;
   }
 }
 

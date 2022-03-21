@@ -4,8 +4,8 @@ import scene from "../base/scene";
 import Laser from "../objects/laser";
 
 class Enemy {
-  constructor(position, updateUserHp) {
-    this.updateUserHp = updateUserHp;
+  constructor(position, handlers) {
+    this.handlers = handlers;
     const enemyHeight = 2;
     const object = new THREE.Mesh(new THREE.BoxGeometry(1, enemyHeight, 1));
     object.name = "enemy";
@@ -35,7 +35,7 @@ class Enemy {
       player.object.position.z
     );
     this.lastShotAt = elapsedTime;
-    const laser = new Laser(this.object.position, true, this.updateUserHp);
+    const laser = new Laser(this.object.position, true, this.handlers);
     laser.shoot([
       {
         distance: origin.distanceTo(direction),

@@ -16,8 +16,8 @@ audioLoader.load("./sounds/laser2.mp3", (buffer) => {
 });
 
 class Laser {
-  constructor(origin, enemy = false, killEnemyHandler) {
-    this.killEnemyHandler = killEnemyHandler;
+  constructor(origin, enemy = false, handlers) {
+    this.handlers = handlers;
     this.origin = origin;
     const laser = new THREE.Mesh(
       new THREE.CylinderGeometry(0.03, 0.03, 0.75, 16, 16),
@@ -110,16 +110,17 @@ class Laser {
       if (target.object.hp <= 0) {
         const objectExplosion = new Explosion(scene, 5, target.object.position);
         target.object.name === "enemy" &&
-          this.killEnemyHandler(target.object.uuid);
+          this.handlers.killEnemy(target.object.uuid);
         objectExplosion.bang();
         scene.remove(target.object);
       }
     }
     if (target.object.name === "player") {
       target.object.hp -= 10;
-      this.killEnemyHandler();
+      this.handlers.woundPlayer();
       if (target.object.hp <= 0) {
         console.log("you`re dead");
+        this.handlers.pauseGame();
       }
     }
   }

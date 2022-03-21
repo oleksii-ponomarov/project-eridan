@@ -13,6 +13,8 @@
 body {
   font-family: "Orbitron", sans-serif;
   --hud-color: #ffc700;
+  --hud-z-index: 10;
+  --overlay-z-index: 9;
 }
 
 html,
@@ -45,7 +47,7 @@ body {
 
 .loading {
   position: fixed;
-  z-index: 10;
+  z-index: var(--hud-z-index);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -73,6 +75,7 @@ body {
   right: 0;
   padding: 10px;
   font-size: 2.5rem;
+  z-index: var(--hud-z-index);
 }
 
 .hp::before {
@@ -80,4 +83,20 @@ body {
   font-size: 2rem;
   vertical-align: middle;
   margin-right: 0.5rem;
+}
+
+.hit-overlay {
+  position: fixed;
+  z-index: var(--hud-z-index);
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  opacity: 1;
+  background-color: rgba(255, 0, 0, 0.5);
+  transition: opacity 0.5s;
+}
+
+.hidden {
+  opacity: 0;
 }

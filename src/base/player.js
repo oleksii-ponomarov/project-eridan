@@ -6,6 +6,8 @@ import scene from "./scene";
 import Laser from "../objects/laser";
 import { audioLoader } from "./loader";
 import { setHp } from "./gui";
+import { levelParameters } from "../objects/level";
+import { showHit } from "./gui";
 
 let jumpStartBuffer;
 let jumpEndBuffer;
@@ -17,8 +19,8 @@ audioLoader.load("./sounds/jump-end.mp3", (buffer) => {
 });
 
 class Player {
-  constructor(camera, killEnemyHandler) {
-    this.killEnemyHandler = killEnemyHandler;
+  constructor(camera, handlers) {
+    this.handlers = handlers;
 
     this.walkingForward = false;
     this.walkingBackward = false;
@@ -164,15 +166,33 @@ class Player {
     }
   }
 
+  endAllMoves() {
+    this.sprint = false;
+    this.walkingForward = false;
+    this.walkingBackward = false;
+    this.strifeLeft = false;
+    this.strifeRight = false;
+  }
+
   doMove(deltaTime, offset, speed) {
-    this.object.position.x +=
+    const newPositionX =
+      this.object.position.x +
       Math.sin(this.camera.rotation.y + offset) * speed * deltaTime;
-    this.object.position.z +=
+    if (Math.abs(newPositionX) < levelParameters.size / 2 - 1) {
+      this.object.position.x = newPositionX;
+    }
+    const newPositionZ =
+      this.object.position.z +
       Math.cos(this.camera.rotation.y + offset) * speed * deltaTime;
+    if (Math.abs(newPositionZ) < levelParameters.size / 2 - 1) {
+      this.object.position.z = newPositionZ;
+    }
   }
 
   shoot(targets) {
-    const laser = new Laser(this.object.position, false, this.killEnemyHandler);
+    const laser = new Laser(this.object.position, false, {
+      killEnemy: this.handlers.killEnemy,
+    });
     laser.shoot(targets);
   }
 
@@ -196,7 +216,20 @@ class Player {
     }
   }
 
-  updateHp() {
+  wound() {
+    showHit();
+    gsap.to(this.camera.rotation, {
+      duration: 0.1,
+      ease: "power2.in",
+      x: "+=0.3",
+      onComplete: () => {
+        gsap.to(this.camera.rotation, {
+          duration: 0.3,
+          ease: "power2.out",
+          x: "-=0.3",
+        });
+      },
+    });
     this.hp -= 10;
     setHp(this.hp);
   }

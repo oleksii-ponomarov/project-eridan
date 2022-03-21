@@ -16,4 +16,16 @@ function setHp(value) {
   hp.textContent = value;
 }
 
-export { debug, initializeGui, setHp };
+function showHit() {
+  const existingOverlay = document.querySelector(".hit-overlay");
+  if (existingOverlay) {
+    existingOverlay.remove();
+  }
+  const hitOverlay = document.createElement("div");
+  hitOverlay.classList.add("hit-overlay");
+  document.body.append(hitOverlay);
+  setTimeout(() => hitOverlay.classList.add("hidden"), 500);
+  setTimeout(() => hitOverlay.remove(), 1000);
+}
+
+export { debug, initializeGui, setHp, showHit };
