@@ -27,8 +27,9 @@ const camera = new THREE.PerspectiveCamera(
   150
 );
 camera.rotation.order = "YXZ";
-camera.position.y = cameraParameters.playerHeight;
-camera.position.z = 2;
+
+export const listener = new THREE.AudioListener();
+camera.add(listener);
 
 gui
   .add(cameraParameters, "playerHeight")
@@ -38,26 +39,5 @@ gui
   .onChange(() => (camera.position.y = parameters.playerHeight));
 gui.add(cameraParameters, "mouseSensitivity").min(0.001).max(1).step(0.001);
 gui.add(cameraParameters, "zeroZone").min(0).max(0.5).step(0.01);
-
-export const updateCamera = () => {
-  if (
-    cursor.x > cameraParameters.zeroZone ||
-    cursor.x < -cameraParameters.zeroZone
-  ) {
-    camera.rotation.y -= cursor.x * cameraParameters.mouseSensitivity;
-    camera.rotation.y = camera.rotation.y % (Math.PI * 2);
-  }
-
-  if (
-    cursor.y > cameraParameters.zeroZone ||
-    cursor.y < -cameraParameters.zeroZone
-  ) {
-    const newRotationX =
-      camera.rotation.x + cursor.y * cameraParameters.mouseSensitivity;
-    if (newRotationX < Math.PI * 0.5 && newRotationX > -Math.PI * 0.5) {
-      camera.rotation.x = newRotationX;
-    }
-  }
-};
 
 export default camera;

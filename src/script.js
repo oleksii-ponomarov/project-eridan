@@ -1,20 +1,24 @@
 import "./style.css";
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-import camera, { sizes, updateCamera } from "./base/camera";
+import camera, { sizes } from "./base/camera";
 import Game from "./base/game";
-import objects, { animateObjects } from "./objects/objects";
-import ground from "./objects/ground";
-import light from "./base/light";
 import Player from "./base/player";
+import objects, { animateObjects } from "./objects/objects";
+import light from "./base/light";
 import scene from "./base/scene";
+import { onLoad, loadingManager } from "./base/loader";
 
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
 
-// Scene
-scene.add(light, camera, ...objects, ground);
+scene.add(light, camera, ...objects);
+const player = new Player(camera);
+const game = new Game(player);
+
+loadingManager.onLoad = () => {
+  onLoad();
+};
 
 window.addEventListener("resize", () => {
   // Update sizes
@@ -29,11 +33,6 @@ window.addEventListener("resize", () => {
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
-
-const player = new Player(camera);
-const game = new Game(player);
-
-// const controls = new OrbitControls(camera, canvas);
 
 /**
  * Renderer
@@ -56,10 +55,11 @@ const tick = () => {
   previousTime = elapsedTime;
 
   animateObjects(elapsedTime);
-  updateCamera();
   game.updateAim();
+  game.updateCamera();
+  game.attackPlayer(elapsedTime);
+  game.animateEnemies(elapsedTime);
   player.walk(deltaTime);
-  // controls.update();
 
   // Render
   renderer.render(scene, camera);

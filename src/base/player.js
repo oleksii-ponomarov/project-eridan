@@ -1,11 +1,22 @@
+import * as THREE from "three";
 import gsap from "gsap";
 
-import { cameraParameters } from "./camera";
+import { cameraParameters, listener } from "./camera";
+import scene from "./scene";
 import Laser from "../objects/laser";
+import { audioLoader } from "./loader";
+
+let jumpStartBuffer;
+let jumpEndBuffer;
+audioLoader.load("./sounds/jump-start.mp3", (buffer) => {
+  jumpStartBuffer = buffer;
+});
+audioLoader.load("./sounds/jump-end.mp3", (buffer) => {
+  jumpEndBuffer = buffer;
+});
 
 class Player {
   constructor(camera) {
-    this.camera = camera;
     this.walkingForward = false;
     this.walkingBackward = false;
     this.strifeLeft = false;
@@ -13,6 +24,38 @@ class Player {
     this.sprint = false;
     this.crawl = false;
     this.inTheAir = false;
+
+    const player = new THREE.Group();
+    player.position.y = cameraParameters.playerHeight;
+
+    const flashLight = new THREE.SpotLight(
+      0xffe484,
+      0.5,
+      10,
+      Math.PI * 0.2,
+      0.2,
+      1
+    );
+    flashLight.visible = false;
+    flashLight.position.y = 0;
+    flashLight.target.position.set(0, 0, -1);
+    camera.add(flashLight, flashLight.target);
+    this.flashLight = flashLight;
+
+    this.camera = camera;
+
+    const playerBoundaries = new THREE.Mesh(
+      new THREE.BoxGeometry(1, cameraParameters.playerHeight, 1),
+      new THREE.MeshBasicMaterial({ side: THREE.BackSide, wireframe: true })
+    );
+    playerBoundaries.visible = false;
+    playerBoundaries.position.y = -cameraParameters.playerHeight / 2;
+    playerBoundaries.name = "player";
+    playerBoundaries.hp = 100;
+    player.add(camera, playerBoundaries);
+    scene.add(player);
+    this.object = player;
+    this.boundaries = playerBoundaries;
     return this;
   }
 
@@ -20,39 +63,55 @@ class Player {
     if (this.inTheAir) {
       return;
     }
-    gsap.to(this.camera.position, {
+    this.crawl = true;
+    gsap.to(this.object.position, {
       duration: 0.3,
       y: cameraParameters.playerCrawlHeight,
     });
+    // this.boundaries.scale.y = 0.75;
   }
 
   standUp() {
     if (this.inTheAir) {
       return;
     }
-    gsap.to(this.camera.position, {
+    this.crawl = false;
+    gsap.to(this.object.position, {
       duration: 0.3,
       y: cameraParameters.playerHeight,
     });
+    // this.boundaries.scale.y = 1;
   }
 
   jump() {
     if (this.inTheAir) {
       return;
     }
+
+    const jumpStartSound = new THREE.Audio(listener);
+    jumpStartSound.setBuffer(jumpStartBuffer);
+    jumpStartSound.setVolume(0.5);
+    jumpStartSound.play();
+
     this.inTheAir = true;
-    gsap.to(this.camera.position, {
+    gsap.to(this.object.position, {
       duration: 0.3,
       ease: "power2.out",
       y: "+=2",
     });
     setTimeout(
       () =>
-        gsap.to(this.camera.position, {
+        gsap.to(this.object.position, {
           duration: 0.3,
           ease: "power2.in",
           y: "-=2",
-          onComplete: () => (this.inTheAir = false),
+          onComplete: () => {
+            this.inTheAir = false;
+            const jumpEndSound = new THREE.Audio(listener);
+            jumpEndSound.setBuffer(jumpEndBuffer);
+            jumpEndSound.setVolume(0.5);
+            jumpEndSound.play();
+          },
         }),
       300
     );
@@ -101,19 +160,23 @@ class Player {
   }
 
   doMove(deltaTime, offset, speed) {
-    this.camera.position.x +=
+    this.object.position.x +=
       Math.sin(this.camera.rotation.y + offset) * speed * deltaTime;
-    this.camera.position.z +=
+    this.object.position.z +=
       Math.cos(this.camera.rotation.y + offset) * speed * deltaTime;
   }
 
-  shoot(target) {
-    const laser = new Laser(this.camera.position);
-    laser.shoot(this.camera.rotation, target);
+  shoot(targets) {
+    const laser = new Laser(this.object.position);
+    laser.shoot(targets);
+  }
+
+  toogleFlashlight() {
+    this.flashLight.visible = !this.flashLight.visible;
   }
 
   walk(deltaTime) {
-    let speed = this.sprint ? 10 : 5;
+    let speed = this.sprint ? 10 : this.crawl ? 2.5 : 5;
     if (this.walkingForward) {
       this.doMove(deltaTime, Math.PI, speed);
     }

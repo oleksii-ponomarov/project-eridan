@@ -2,23 +2,48 @@ import * as THREE from "three";
 import gsap from "gsap";
 
 import scene from "../base/scene";
+import { audioLoader } from "../base/loader";
+import { listener } from "../base/camera";
+import Explosion from "./explosion";
 
-const laserGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.75, 16, 16);
-const laserMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+let enemyLaserSoundBuffer;
+let laserSoundBuffer;
+audioLoader.load("./sounds/laser.mp3", (buffer) => {
+  enemyLaserSoundBuffer = buffer;
+});
+audioLoader.load("./sounds/laser2.mp3", (buffer) => {
+  laserSoundBuffer = buffer;
+});
 
 class Laser {
-  constructor(origin) {
+  constructor(origin, enemy = false) {
     this.origin = origin;
-    const laser = new THREE.Mesh(laserGeometry, laserMaterial);
+    const laser = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.03, 0.03, 0.75, 16, 16),
+      new THREE.MeshBasicMaterial({ color: enemy ? 0xff0000 : 0x00ff00 })
+    );
     laser.rotation.order = "YXZ";
-    laser.position.set(origin.x, origin.y - 0.15, origin.z);
+    laser.position.set(origin.x, enemy ? origin.y : origin.y - 0.15, origin.z);
+
+    const laserSound = new THREE.PositionalAudio(listener);
+    laserSound.setBuffer(enemy ? enemyLaserSoundBuffer : laserSoundBuffer);
+    laserSound.setRefDistance(5);
+    this.sound = laserSound;
+    laser.add(laserSound);
+
     scene.add(laser);
     this.object = laser;
+    this.enemy = enemy;
+
     return this;
   }
 
-  shoot(direction, target) {
-    const shootLight = new THREE.PointLight(0xffffff, 0.6, 5);
+  shoot(targets) {
+    if (!targets.length) {
+      return;
+    }
+    this.sound.play();
+    const shootLight = new THREE.PointLight(0xffffff, 0.5, 2);
     shootLight.position.set(this.origin.x, this.origin.y, this.origin.z);
     scene.add(shootLight);
     gsap.to(shootLight, {
@@ -29,62 +54,62 @@ class Laser {
         scene.remove(shootLight);
       },
     });
-    this.direction = direction;
-    this.object.rotation.x = direction.x + Math.PI * 0.5;
-    this.object.rotation.y = direction.y;
+    this.object.lookAt(
+      targets[0].point.x,
+      targets[0].point.y,
+      targets[0].point.z
+    );
+    this.object.rotation.x += Math.PI * 0.5;
     gsap.to(this.object.position, {
       ease: "none",
-      duration: target.distance * 0.01,
-      x: target.point.x,
-      y: target.point.y,
-      z: target.point.z,
+      duration: targets[0].distance * 0.01,
+      x: targets[0].point.x,
+      y: targets[0].point.y,
+      z: targets[0].point.z,
       onComplete: () => {
         scene.remove(this.object);
-        this.createExplosion(target);
+        this.decideIfHit(targets);
       },
     });
   }
 
-  createExplosion(target) {
-    const explosion = new THREE.Mesh(
-      new THREE.SphereGeometry(0.1, 32, 32),
-      new THREE.MeshBasicMaterial({
-        color: 0xffff00,
-        transparent: true,
-        depthWrite: false,
-      })
+  decideIfHit(targets) {
+    for (const target of targets) {
+      let { min, max } = new THREE.Box3().setFromObject(target.object);
+      const isHit =
+        target.point.x >= min.x &&
+        target.point.x <= max.x &&
+        target.point.y >= min.y &&
+        target.point.y <= max.y &&
+        target.point.z >= min.z &&
+        target.point.z <= max.z;
+
+      if (isHit) {
+        this.hit(target);
+        break;
+      }
+
+      this.shoot(targets.slice(1));
+    }
+  }
+
+  hit(target) {
+    const explosion = new Explosion(
+      scene,
+      0.1,
+      target.point,
+      target.face?.normal
     );
-    explosion.position.set(target.point.x, target.point.y, target.point.z);
-    const explosionLight = new THREE.PointLight(0xffffff, 0.6, 5);
-    explosionLight.position.set(target.point.x, target.point.y, target.point.z);
-    scene.add(explosion, explosionLight);
-    const scale = 2 + Math.random() * 2;
-    const explosionDuration = 0.2;
-    gsap.to(explosion.scale, {
-      ease: "power2.out",
-      duration: explosionDuration,
-      x: scale,
-      y: scale,
-      z: scale,
-    });
-    gsap.to(explosionLight, {
-      ease: "power2.out",
-      duration: explosionDuration,
-      intensity: 0,
-    });
-    gsap.to(explosion.material, {
-      ease: "power2.out",
-      duration: explosionDuration,
-      opacity: 0,
-      onComplete: () => {
-        scene.remove(explosion, explosionLight);
-      },
-    });
+    explosion.bang();
     if (target.object.name === "object") {
       target.object.hp -= 10;
       if (target.object.hp <= 0) {
+        const objectExplosion = new Explosion(scene, 5, target.object.position);
+        objectExplosion.bang();
         scene.remove(target.object);
       }
+    }
+    if (target.object.name === "player") {
     }
   }
 }

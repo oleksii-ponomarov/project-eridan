@@ -28,3 +28,26 @@ body {
   transform: translate(-50%, -50%);
   fill: #ffc700;
 }
+
+.loading {
+  position: fixed;
+  z-index: 10;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 40px;
+}
+
+.loading-progress {
+  margin-top: 10px;
+  border: 2px solid #fdd526;
+  border-radius: 3px;
+  min-width: 192px;
+}
+
+.loading-bar {
+  height: 5px;
+  background-color: #005bbb;
+  width: 0;
+  transition: width 0.3s;
+}
