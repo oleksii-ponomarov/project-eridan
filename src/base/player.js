@@ -19,8 +19,9 @@ audioLoader.load("./sounds/jump-end.mp3", (buffer) => {
 });
 
 class Player {
-  constructor(camera, handlers) {
+  constructor(camera, handlers, enemies) {
     this.handlers = handlers;
+    this.enemies = enemies;
 
     this.walkingForward = false;
     this.walkingBackward = false;
@@ -178,12 +179,12 @@ class Player {
     const newPositionX =
       this.object.position.x +
       Math.sin(this.camera.rotation.y + offset) * speed * deltaTime;
-    if (Math.abs(newPositionX) < levelParameters.size / 2 - 1) {
-      this.object.position.x = newPositionX;
-    }
     const newPositionZ =
       this.object.position.z +
       Math.cos(this.camera.rotation.y + offset) * speed * deltaTime;
+    if (Math.abs(newPositionX) < levelParameters.size / 2 - 1) {
+      this.object.position.x = newPositionX;
+    }
     if (Math.abs(newPositionZ) < levelParameters.size / 2 - 1) {
       this.object.position.z = newPositionZ;
     }

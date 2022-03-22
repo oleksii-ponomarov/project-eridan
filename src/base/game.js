@@ -1,11 +1,11 @@
 import * as THREE from "three";
 
 import scene from "./scene";
-import objects from "../objects/objects";
+import Crate from "../objects/crate";
 import camera, { cameraParameters } from "./camera";
 import { debug } from "./gui";
 import Enemy from "../objects/enemy";
-import Level from "../objects/level";
+import Level, { levelParameters } from "../objects/level";
 import Skybox from "../objects/skybox";
 import Player from "./player";
 
@@ -14,6 +14,8 @@ const parameters = {
   moveEnemies: false,
   enableMouse: true,
   paused: false,
+  enemiesNo: 3,
+  objectsNo: 3,
 };
 
 debug.add(parameters, "attack");
@@ -21,10 +23,6 @@ debug.add(parameters, "moveEnemies");
 
 class Game {
   constructor() {
-    for (const object of objects) {
-      object.name = "object";
-      object.hp = 100;
-    }
     const skybox = new Skybox();
     this.skybox = skybox;
     const raycaster = new THREE.Raycaster();
@@ -45,9 +43,9 @@ class Game {
     window.addEventListener("click", () => this.handleClick.call(this));
     window.addEventListener("contextmenu", (e) => e.preventDefault());
 
-    const enemiesNo = Math.random() * 4;
+    // const enemiesNo = Math.random() * 4;
     this.enemies = [];
-    for (let i = 0; i < enemiesNo; i++) {
+    for (let i = 0; i < parameters.enemiesNo; i++) {
       const enemy = new Enemy(
         {
           x: (0.5 - Math.random()) * 20,
@@ -61,10 +59,28 @@ class Game {
       this.enemies.push(enemy);
     }
 
-    const player = new Player(camera, {
-      killEnemy: (id) => this.killEnemy(id),
-    });
+    const player = new Player(
+      camera,
+      {
+        killEnemy: (id) => this.killEnemy(id),
+      },
+      this.enemies
+    );
     this.player = player;
+
+    this.objects = [];
+    for (let i = 0; i < parameters.objectsNo; i++) {
+      const object = new Crate(
+        {
+          x: (0.5 - Math.random()) * (levelParameters.size / 2 - 2),
+          z: (0.5 - Math.random()) * (levelParameters.size / 2 - 2),
+        },
+        Math.random() * Math.PI * 2
+      );
+      console.log(object);
+      this.objects.push(object);
+      scene.add(object);
+    }
 
     return this;
   }

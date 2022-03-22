@@ -3,7 +3,6 @@ import * as THREE from "three";
 
 import camera, { sizes } from "./base/camera";
 import Game from "./base/game";
-import objects, { animateObjects } from "./objects/objects";
 import light from "./base/light";
 import scene from "./base/scene";
 import { onLoad, loadingManager } from "./base/loader";
@@ -11,7 +10,7 @@ import { onLoad, loadingManager } from "./base/loader";
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
 
-scene.add(light, camera, ...objects);
+scene.add(light, camera);
 const game = new Game();
 
 loadingManager.onLoad = () => {
@@ -40,6 +39,8 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 /**
  * Animate
@@ -52,7 +53,6 @@ const tick = () => {
   const deltaTime = elapsedTime - previousTime;
   previousTime = elapsedTime;
 
-  animateObjects(elapsedTime);
   game.updateAim();
   game.updateCamera();
   game.attackPlayer(elapsedTime);
