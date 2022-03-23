@@ -1,4 +1,6 @@
 {
+  "name": "project-eridan",
+  "description": "FPS Shooter",
   "repository": "#",
   "license": "UNLICENSED",
   "scripts": {
