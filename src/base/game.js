@@ -24,6 +24,7 @@ debug.add(parameters, "moveEnemies");
 class Game {
   constructor() {
     this.paused = true;
+    this.started = false;
 
     scene.add(light, camera);
     const skybox = new Skybox();
@@ -79,8 +80,7 @@ class Game {
         killEnemy: (id) => this.killEnemy(id),
         blowObject: (id) => this.blowObject(id),
       },
-      this.enemies,
-      this.objects
+      this
     );
     this.player = player;
 
@@ -94,7 +94,7 @@ class Game {
       scene.add(enemy.object);
     }
     for (const object of this.objects) {
-      scene.add(object);
+      scene.add(object.object);
     }
     showMenu(
       {
@@ -103,6 +103,7 @@ class Game {
           this.start();
           window.addEventListener("click", () => this.handleClick.call(this));
           this.menuIsShown = false;
+          this.started = true;
         },
       },
       true
@@ -125,9 +126,6 @@ class Game {
   handleKeyDown(e) {
     e.stopPropagation();
     const key = e.key.toLowerCase();
-    if (this.paused) {
-      return;
-    }
     if (key === "escape") {
       if (!this.menuIsShown) {
         this.menuIsShown = true;
@@ -138,7 +136,14 @@ class Game {
             this.menuIsShown = false;
           },
         });
+      } else {
+        this.menuIsShown = false;
+        this.start();
+        hideMenu();
       }
+    }
+    if (this.paused) {
+      return;
     }
     if (key === "z") {
       debug._hidden ? debug.show() : debug.hide();
@@ -243,7 +248,7 @@ class Game {
     this.raycaster.setFromCamera({ x: 0, y: 0 }, this.player.camera);
 
     const intersects = this.raycaster.intersectObjects([
-      ...this.objects,
+      ...this.objects.map((object) => object.object),
       ...this.enemies.map((enemy) => enemy.object),
       this.level,
       this.skybox,
@@ -299,16 +304,15 @@ class Game {
   }
 
   killEnemy(id) {
-    console.log(id, this.enemies);
     const enemyToKill = this.enemies.find((enemy) => enemy.id === id);
     scene.remove(enemyToKill.object);
     this.enemies = this.enemies.filter((enemy) => enemy.id !== id);
   }
 
   blowObject(id) {
-    const objectToBlow = this.objects.find((object) => object.uuid === id);
-    scene.remove(objectToBlow);
-    this.objects = this.objects.filter((object) => object.uuid !== id);
+    const objectToBlow = this.objects.find((object) => object.id === id);
+    scene.remove(objectToBlow.object);
+    this.objects = this.objects.filter((object) => object.id !== id);
   }
 
   pause() {

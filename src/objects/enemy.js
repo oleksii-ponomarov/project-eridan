@@ -20,6 +20,7 @@ class Enemy {
     this.raycaster = raycaster;
     this.moveX = Math.random() > 0.5 ? (0.5 - Math.random()) * 5 : 0;
     this.moveZ = Math.random() > 0.5 ? (0.5 - Math.random()) * 5 : 0;
+    this.boundaries = new THREE.Box3().setFromObject(object);
     return this;
   }
 
@@ -32,7 +33,7 @@ class Enemy {
         .normalize()
     );
     const intersections = this.raycaster.intersectObjects([
-      ...this.game.objects,
+      ...this.game.objects.map((object) => object.object),
       ...this.game.enemies.map((enemy) => enemy.object),
       this.game.level,
       player.boundaries,

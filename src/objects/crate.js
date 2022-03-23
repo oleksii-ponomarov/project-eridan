@@ -47,7 +47,11 @@ class Crate {
     crate.castShadow = true;
     crate.hp = 100;
     crate.name = "object";
-    return crate;
+    crate.geometry.computeBoundingBox();
+    this.boundaries = new THREE.Box3().setFromObject(crate);
+    this.object = crate;
+    this.id = crate.uuid;
+    return this;
   }
 }
 

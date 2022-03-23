@@ -19,9 +19,9 @@ audioLoader.load("./sounds/jump-end.mp3", (buffer) => {
 });
 
 class Player {
-  constructor(camera, handlers, enemies) {
+  constructor(camera, handlers, game) {
     this.handlers = handlers;
-    this.enemies = enemies;
+    this.game = game;
 
     this.walkingForward = false;
     this.walkingBackward = false;
@@ -64,6 +64,7 @@ class Player {
     scene.add(player);
     this.object = player;
     this.boundaries = playerBoundaries;
+
     return this;
   }
 
@@ -182,10 +183,36 @@ class Player {
     const newPositionZ =
       this.object.position.z +
       Math.cos(this.camera.rotation.y + offset) * speed * deltaTime;
-    if (Math.abs(newPositionX) < levelParameters.size / 2 - 1) {
+
+    const playerWidth = this.boundaries.geometry.parameters.width;
+    const levelRestriction = levelParameters.size / 2 - playerWidth;
+    const isEnemiesConflict = this.game.enemies.some(
+      ({ boundaries }) =>
+        newPositionX >= boundaries.min.x - 0.5 &&
+        newPositionX <= boundaries.max.x + 0.5 &&
+        newPositionZ >= boundaries.min.z - 0.5 &&
+        newPositionZ <= boundaries.max.z + 0.5
+    );
+    const isObjectsConflict = this.game.objects.some(
+      ({ boundaries }) =>
+        newPositionX >= boundaries.min.x - 0.2 &&
+        newPositionX <= boundaries.max.x + 0.2 &&
+        newPositionZ >= boundaries.min.z - 0.2 &&
+        newPositionZ <= boundaries.max.z + 0.2
+    );
+
+    if (
+      Math.abs(newPositionX) < levelRestriction &&
+      !isEnemiesConflict &&
+      !isObjectsConflict
+    ) {
       this.object.position.x = newPositionX;
     }
-    if (Math.abs(newPositionZ) < levelParameters.size / 2 - 1) {
+    if (
+      Math.abs(newPositionZ) < levelRestriction &&
+      !isEnemiesConflict &&
+      !isObjectsConflict
+    ) {
       this.object.position.z = newPositionZ;
     }
   }

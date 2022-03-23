@@ -20,6 +20,7 @@ h4,
 h5,
 h6 {
   font-family: "Orbitron";
+  letter-spacing: 0.1rem;
 }
 
 a {

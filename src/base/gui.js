@@ -4,6 +4,7 @@ const debug = new dat.GUI();
 debug.hide();
 
 function showMenu({ onStartGame }, newGame = false) {
+  document.body.classList.remove("game-active");
   const menu = document.createElement("div");
   menu.classList.add("menu");
   const menuBody = document.createElement("ul");
@@ -12,7 +13,6 @@ function showMenu({ onStartGame }, newGame = false) {
       label: newGame ? "Start Game" : "Resume Game",
       handler: (e) => {
         e.stopPropagation();
-        document.body.classList.add("game-active");
         onStartGame();
         hideMenu();
       },
@@ -39,6 +39,7 @@ function showMenu({ onStartGame }, newGame = false) {
 }
 
 function hideMenu() {
+  document.body.classList.add("game-active");
   const menu = document.querySelector(".menu");
   if (menu) {
     menu.remove();
