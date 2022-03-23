@@ -191,9 +191,7 @@ class Player {
   }
 
   shoot(targets) {
-    const laser = new Laser(this.object.position, false, {
-      killEnemy: this.handlers.killEnemy,
-    });
+    const laser = new Laser(this.object.position, false, this.handlers);
     laser.shoot(targets);
   }
 

@@ -111,8 +111,9 @@ class Laser {
         const objectExplosion = new Explosion(scene, 5, target.object.position);
         target.object.name === "enemy" &&
           this.handlers.killEnemy(target.object.uuid);
+        target.object.name === "object" &&
+          this.handlers.blowObject(target.object.uuid);
         objectExplosion.bang();
-        scene.remove(target.object);
       }
     }
     if (target.object.name === "player") {

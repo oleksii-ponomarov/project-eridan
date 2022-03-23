@@ -3,8 +3,53 @@ import * as dat from "lil-gui";
 const debug = new dat.GUI();
 debug.hide();
 
+function showMenu({ onStartGame }, newGame = false) {
+  const menu = document.createElement("div");
+  menu.classList.add("menu");
+  const menuBody = document.createElement("ul");
+  const menuItems = [
+    {
+      label: newGame ? "Start Game" : "Resume Game",
+      handler: (e) => {
+        e.stopPropagation();
+        document.body.classList.add("game-active");
+        onStartGame();
+        hideMenu();
+      },
+    },
+    { label: "Info", link: "/info" },
+  ];
+  for (const item of menuItems) {
+    const menuItem = document.createElement("li");
+    let menuButton;
+    if (item.link) {
+      menuButton = document.createElement("a");
+      menuButton.setAttribute("href", item.link);
+    } else {
+      menuButton = document.createElement("button");
+      menuButton.addEventListener("click", item.handler);
+    }
+    menuButton.classList.add("menu-button");
+    menuButton.textContent = item.label;
+    menuItem.append(menuButton);
+    menuBody.append(menuItem);
+  }
+  menu.append(menuBody);
+  document.body.append(menu);
+}
+
+function hideMenu() {
+  const menu = document.querySelector(".menu");
+  if (menu) {
+    menu.remove();
+  }
+}
+
+function showInfo() {}
+
 function initializeGui() {
   const gui = document.querySelector(".gui");
+  gui.classList.remove("gui-disabled");
   const hp = document.createElement("span");
   hp.classList.add("hp");
   hp.textContent = 100;
@@ -28,4 +73,4 @@ function showHit() {
   setTimeout(() => hitOverlay.remove(), 1000);
 }
 
-export { debug, initializeGui, setHp, showHit };
+export { debug, initializeGui, setHp, showHit, showMenu, hideMenu };

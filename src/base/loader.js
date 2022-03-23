@@ -35,7 +35,6 @@ loadingManager.onError = (data) => {
 
 export function onLoad() {
   loading.remove();
-  initializeGui();
 }
 
 export const textureLoader = new THREE.TextureLoader(loadingManager);

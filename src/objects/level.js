@@ -2,18 +2,21 @@ import * as THREE from "three";
 
 import { textureLoader } from "../base/loader";
 
-const wallsColorTexture = textureLoader.load("./textures/metall/color.jpg");
+const wallsColorTexture = textureLoader.load("./textures/metal/color.jpg");
 const wallsAmbientOcclusionTexture = textureLoader.load(
-  "./textures/metall/ambientOcclusion.jpg"
+  "./textures/metal/ambientOcclusion.jpg"
 );
 const wallsMetalnessTexture = textureLoader.load(
-  "./textures/metall/metalness.jpg"
+  "./textures/metal/metalness.jpg"
 );
 const wallsRoughnessTexture = textureLoader.load(
-  "./textures/metall/roughness.jpg"
+  "./textures/metal/roughness.jpg"
 );
-const wallsNormalTexture = textureLoader.load("./textures/metall/normal.jpg");
-const wallsHeightTexture = textureLoader.load("./textures/metall/height.png");
+const wallsNormalTexture = textureLoader.load("./textures/metal/normal.jpg");
+const wallsHeightTexture = textureLoader.load("./textures/metal/height.png");
+const wallsEmissiveTexture = textureLoader.load(
+  "./textures/metal/emissive.jpg"
+);
 
 wallsColorTexture.repeat.set(3, 1);
 wallsAmbientOcclusionTexture.repeat.set(3, 1);
@@ -21,12 +24,14 @@ wallsMetalnessTexture.repeat.set(3, 1);
 wallsRoughnessTexture.repeat.set(3, 1);
 wallsNormalTexture.repeat.set(3, 1);
 wallsHeightTexture.repeat.set(3, 1);
+wallsEmissiveTexture.repeat.set(3, 1);
 wallsColorTexture.wrapS = THREE.RepeatWrapping;
 wallsAmbientOcclusionTexture.wrapS = THREE.RepeatWrapping;
 wallsMetalnessTexture.wrapS = THREE.RepeatWrapping;
 wallsRoughnessTexture.wrapS = THREE.RepeatWrapping;
 wallsNormalTexture.wrapS = THREE.RepeatWrapping;
 wallsHeightTexture.wrapS = THREE.RepeatWrapping;
+wallsEmissiveTexture.wrapS = THREE.RepeatWrapping;
 
 const floorColorTexture = textureLoader.load("./textures/floor/color.jpg");
 const floorAmbientOcclusionTexture = textureLoader.load(
@@ -70,8 +75,11 @@ class Level {
       metalnessMap: wallsMetalnessTexture,
       roughnessMap: wallsRoughnessTexture,
       displacementMap: wallsHeightTexture,
+      emissiveMap: wallsEmissiveTexture,
     });
     wallsMaterial.displacementScale = 0.1;
+    wallsMaterial.emissive = new THREE.Color(0xffffff);
+    wallsMaterial.emissiveIntensity = 0.75;
 
     const floorGeometry = new THREE.PlaneGeometry(
       levelParameters.size,
@@ -79,6 +87,7 @@ class Level {
       32,
       32
     );
+
     const floorMaterial = new THREE.MeshStandardMaterial({
       map: floorColorTexture,
       aoMap: floorAmbientOcclusionTexture,
@@ -86,6 +95,7 @@ class Level {
       metalnessMap: floorMetalnessTexture,
       roughnessMap: floorRoughnessTexture,
     });
+
     const wallsGeometry = new THREE.PlaneGeometry(
       levelParameters.size,
       levelParameters.wallHeight,
@@ -98,25 +108,34 @@ class Level {
     );
 
     const level = new THREE.Group();
+    level.name = "level";
 
     const wall1 = new THREE.Mesh(wallsGeometry, wallsMaterial);
     wall1.position.z = -levelParameters.size / 2;
     wall1.position.y = levelParameters.wallHeight / 2;
+    wall1.castShadow = true;
+    wall1.receiveShadow = true;
 
     const wall2 = new THREE.Mesh(wallsGeometry, wallsMaterial);
     wall2.rotation.y = Math.PI;
     wall2.position.z = levelParameters.size / 2;
     wall2.position.y = levelParameters.wallHeight / 2;
+    wall2.castShadow = true;
+    wall2.receiveShadow = true;
 
     const wall3 = new THREE.Mesh(wallsGeometry, wallsMaterial);
     wall3.rotation.y = Math.PI * 0.5;
     wall3.position.x = -levelParameters.size / 2;
     wall3.position.y = levelParameters.wallHeight / 2;
+    wall3.castShadow = true;
+    wall3.receiveShadow = true;
 
     const wall4 = new THREE.Mesh(wallsGeometry, wallsMaterial);
     wall4.rotation.y = -Math.PI * 0.5;
     wall4.position.x = levelParameters.size / 2;
     wall4.position.y = levelParameters.wallHeight / 2;
+    wall4.castShadow = true;
+    wall4.receiveShadow = true;
 
     const ground = new THREE.Mesh(floorGeometry, floorMaterial);
     ground.rotation.x = -Math.PI * 0.5;

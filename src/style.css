@@ -8,6 +8,7 @@
 * {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 body {
@@ -20,6 +21,9 @@ body {
 html,
 body {
   overflow: hidden;
+}
+
+body.game-active {
   cursor: none;
 }
 
@@ -99,4 +103,61 @@ body {
 
 .hidden {
   opacity: 0;
+}
+
+.gui-disabled {
+  display: none;
+}
+
+.menu {
+  position: fixed;
+  z-index: var(--hud-z-index);
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu ul {
+  list-style: none;
+  text-align: center;
+}
+
+.menu li {
+  padding: 1rem;
+}
+
+.menu-button {
+  padding: 0.5rem;
+  text-decoration: none;
+  color: #ffffff;
+  background: none;
+  display: block;
+  font-family: "Orbitron";
+  cursor: pointer;
+  font-size: 2rem;
+  border: none;
+  position: relative;
+  width: min-content;
+  margin: 0 auto;
+  white-space: nowrap;
+}
+
+.menu-button::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  transition: width 0.3s;
+  border-bottom: 2px solid #ffffff;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.menu-button:hover::after {
+  width: 100%;
 }

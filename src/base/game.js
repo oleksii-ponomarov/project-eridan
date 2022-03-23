@@ -3,17 +3,17 @@ import * as THREE from "three";
 import scene from "./scene";
 import Crate from "../objects/crate";
 import camera, { cameraParameters } from "./camera";
-import { debug } from "./gui";
+import { debug, showMenu, hideMenu, initializeGui } from "./gui";
 import Enemy from "../objects/enemy";
 import Level, { levelParameters } from "../objects/level";
 import Skybox from "../objects/skybox";
 import Player from "./player";
+import light from "./light";
 
 const parameters = {
   attack: true,
   moveEnemies: false,
   enableMouse: true,
-  paused: false,
   enemiesNo: 3,
   objectsNo: 3,
 };
@@ -23,15 +23,16 @@ debug.add(parameters, "moveEnemies");
 
 class Game {
   constructor() {
+    this.paused = true;
+
+    scene.add(light, camera);
     const skybox = new Skybox();
     this.skybox = skybox;
     const raycaster = new THREE.Raycaster();
     this.raycaster = raycaster;
     this.currentIntersect = null;
-    scene.add(skybox);
 
     const level = new Level();
-    scene.add(level);
     this.level = level;
 
     this.cursor = { x: 0, y: 0 };
@@ -40,7 +41,6 @@ class Game {
     );
     window.addEventListener("keydown", (e) => this.handleKeyDown.call(this, e));
     window.addEventListener("keyup", (e) => this.handleKeyUp.call(this, e));
-    window.addEventListener("click", () => this.handleClick.call(this));
     window.addEventListener("contextmenu", (e) => e.preventDefault());
 
     // const enemiesNo = Math.random() * 4;
@@ -54,19 +54,12 @@ class Game {
         {
           woundPlayer: () => this.player.wound(),
           pauseGame: () => this.pause(),
-        }
+          blowObject: (id) => this.blowObject(id),
+        },
+        this
       );
       this.enemies.push(enemy);
     }
-
-    const player = new Player(
-      camera,
-      {
-        killEnemy: (id) => this.killEnemy(id),
-      },
-      this.enemies
-    );
-    this.player = player;
 
     this.objects = [];
     for (let i = 0; i < parameters.objectsNo; i++) {
@@ -77,12 +70,44 @@ class Game {
         },
         Math.random() * Math.PI * 2
       );
-      console.log(object);
       this.objects.push(object);
-      scene.add(object);
     }
 
+    const player = new Player(
+      camera,
+      {
+        killEnemy: (id) => this.killEnemy(id),
+        blowObject: (id) => this.blowObject(id),
+      },
+      this.enemies,
+      this.objects
+    );
+    this.player = player;
+
     return this;
+  }
+
+  init() {
+    scene.add(this.skybox);
+    scene.add(this.level);
+    for (const enemy of this.enemies) {
+      scene.add(enemy.object);
+    }
+    for (const object of this.objects) {
+      scene.add(object);
+    }
+    showMenu(
+      {
+        onStartGame: () => {
+          initializeGui();
+          this.start();
+          window.addEventListener("click", () => this.handleClick.call(this));
+          this.menuIsShown = false;
+        },
+      },
+      true
+    );
+    this.menuIsShown = true;
   }
 
   handleMouseMove(e) {
@@ -91,7 +116,7 @@ class Game {
   }
 
   handleClick() {
-    if (parameters.paused) {
+    if (this.paused) {
       return;
     }
     this.player.shoot(this.currentIntersect);
@@ -100,8 +125,20 @@ class Game {
   handleKeyDown(e) {
     e.stopPropagation();
     const key = e.key.toLowerCase();
-    if (parameters.paused) {
+    if (this.paused) {
       return;
+    }
+    if (key === "escape") {
+      if (!this.menuIsShown) {
+        this.menuIsShown = true;
+        this.pause();
+        showMenu({
+          onStartGame: () => {
+            this.start();
+            this.menuIsShown = false;
+          },
+        });
+      }
     }
     if (key === "z") {
       debug._hidden ? debug.show() : debug.hide();
@@ -206,7 +243,7 @@ class Game {
     this.raycaster.setFromCamera({ x: 0, y: 0 }, this.player.camera);
 
     const intersects = this.raycaster.intersectObjects([
-      ...scene.children.filter((mesh) => mesh.name === "object"),
+      ...this.objects,
       ...this.enemies.map((enemy) => enemy.object),
       this.level,
       this.skybox,
@@ -220,7 +257,7 @@ class Game {
   }
 
   updateCamera() {
-    if (parameters.paused) {
+    if (this.paused) {
       return;
     }
     if (parameters.enableMouse) {
@@ -249,7 +286,7 @@ class Game {
   }
 
   attackPlayer(elapsedTime) {
-    if (parameters.paused) {
+    if (this.paused) {
       return;
     }
     if (parameters.attack) {
@@ -262,16 +299,25 @@ class Game {
   }
 
   killEnemy(id) {
+    console.log(id, this.enemies);
+    const enemyToKill = this.enemies.find((enemy) => enemy.id === id);
+    scene.remove(enemyToKill.object);
     this.enemies = this.enemies.filter((enemy) => enemy.id !== id);
+  }
+
+  blowObject(id) {
+    const objectToBlow = this.objects.find((object) => object.uuid === id);
+    scene.remove(objectToBlow);
+    this.objects = this.objects.filter((object) => object.uuid !== id);
   }
 
   pause() {
     this.player.endAllMoves();
-    parameters.paused = true;
+    this.paused = true;
   }
 
-  resume() {
-    parameters.paused = false;
+  start() {
+    this.paused = false;
   }
 }
 

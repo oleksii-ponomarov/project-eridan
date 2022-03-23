@@ -3,17 +3,16 @@ import * as THREE from "three";
 
 import camera, { sizes } from "./base/camera";
 import Game from "./base/game";
-import light from "./base/light";
 import scene from "./base/scene";
 import { onLoad, loadingManager } from "./base/loader";
 
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
 
-scene.add(light, camera);
 const game = new Game();
 
 loadingManager.onLoad = () => {
+  game.init();
   onLoad();
 };
 
