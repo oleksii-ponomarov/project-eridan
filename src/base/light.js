@@ -5,15 +5,16 @@ import { levelParameters } from "../objects/level";
 
 const light = new THREE.Group();
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.05);
+debug.add(ambientLight, "intensity").min(0).max(1).step(0.01);
 
 const directionalLight = new THREE.DirectionalLight(0xaaaaff, 0.5);
 directionalLight.position.set(5, 12, -12);
 directionalLight.castShadow = true;
 directionalLight.shadow.camera.top = 15;
 directionalLight.shadow.camera.bottom = -15;
-directionalLight.shadow.camera.left = -levelParameters.size / 1.5;
-directionalLight.shadow.camera.right = levelParameters.size / 1.5;
+directionalLight.shadow.camera.left = -levelParameters.size;
+directionalLight.shadow.camera.right = levelParameters.size;
 const directionalLightCameraHelper = new THREE.CameraHelper(
   directionalLight.shadow.camera
 );

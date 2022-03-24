@@ -44,7 +44,7 @@ class Player {
       0.2,
       1
     );
-    flashLight.visible = false;
+    flashLight.visible = true;
     flashLight.position.y = 0;
     flashLight.target.position.set(0, 0, -1);
     camera.add(flashLight, flashLight.target);
@@ -61,6 +61,8 @@ class Player {
     playerBoundaries.name = "player";
     playerBoundaries.hp = 100;
     player.add(camera, playerBoundaries);
+    player.position.x =
+      levelParameters.size / 2 + levelParameters.corridorLength / 2;
     scene.add(player);
     this.object = player;
     this.boundaries = playerBoundaries;
@@ -185,6 +187,10 @@ class Player {
       Math.cos(this.camera.rotation.y + offset) * speed * deltaTime;
 
     const playerWidth = this.boundaries.geometry.parameters.width;
+    const isInCorridor = newPositionX >= levelParameters.size / 2 - playerWidth;
+    const canEnterCorridor =
+      Math.abs(newPositionZ) <=
+      levelParameters.corridorLength / 2 - playerWidth;
     const levelRestriction = levelParameters.size / 2 - playerWidth;
     const isEnemiesConflict = this.game.enemies.some(
       ({ boundaries }) =>
@@ -201,17 +207,38 @@ class Player {
         newPositionZ <= boundaries.max.z + 0.2
     );
 
-    if (
-      Math.abs(newPositionX) < levelRestriction &&
-      !isEnemiesConflict &&
-      !isObjectsConflict
+    if (this.game.level.doorsOpen) {
+      // walk free
+      if (
+        (isInCorridor &&
+          canEnterCorridor &&
+          newPositionX <=
+            levelParameters.size / 2 +
+              levelParameters.corridorLength -
+              playerWidth) ||
+        (Math.abs(newPositionX) < levelRestriction &&
+          !isEnemiesConflict &&
+          !isObjectsConflict)
+      ) {
+        this.object.position.x = newPositionX;
+      }
+    } else if (
+      // restrict user to the corridor
+      newPositionX >= levelParameters.size / 2 + playerWidth &&
+      newPositionX <=
+        levelParameters.size / 2 + levelParameters.corridorLength - playerWidth
     ) {
       this.object.position.x = newPositionX;
     }
+
     if (
-      Math.abs(newPositionZ) < levelRestriction &&
-      !isEnemiesConflict &&
-      !isObjectsConflict
+      (isInCorridor &&
+        Math.abs(newPositionZ) <
+          levelParameters.corridorLength / 2 - playerWidth) ||
+      (!isInCorridor &&
+        Math.abs(newPositionZ) < levelRestriction &&
+        !isEnemiesConflict &&
+        !isObjectsConflict)
     ) {
       this.object.position.z = newPositionZ;
     }

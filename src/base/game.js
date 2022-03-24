@@ -89,7 +89,7 @@ class Game {
 
   init() {
     scene.add(this.skybox);
-    scene.add(this.level);
+    scene.add(this.level.object);
     for (const enemy of this.enemies) {
       scene.add(enemy.object);
     }
@@ -145,6 +145,15 @@ class Game {
     if (this.paused) {
       return;
     }
+    if (["e", "у"].includes(key)) {
+      if (
+        this.currentIntersect &&
+        this.currentIntersect[0].object.name === "openDoor"
+      ) {
+        this.level.buttonSound.play();
+        this.level.openDoors();
+      }
+    }
     if (key === "z") {
       debug._hidden ? debug.show() : debug.hide();
     }
@@ -187,7 +196,7 @@ class Game {
     }
     if (["a", "ф"].includes(key)) {
       e.preventDefault();
-      if (this.player.strifeLeft) {
+      if (this.player.strifeLeft || this.player.inTheAir) {
         return;
       }
       this.player.startMove("left");
@@ -195,7 +204,7 @@ class Game {
     }
     if (["d", "в"].includes(key)) {
       e.preventDefault();
-      if (this.player.strifeRight) {
+      if (this.player.strifeRight || this.player.inTheAir) {
         return;
       }
       this.player.startMove("right");
@@ -250,7 +259,7 @@ class Game {
     const intersects = this.raycaster.intersectObjects([
       ...this.objects.map((object) => object.object),
       ...this.enemies.map((enemy) => enemy.object),
-      this.level,
+      this.level.object,
       this.skybox,
     ]);
 

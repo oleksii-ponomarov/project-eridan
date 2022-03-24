@@ -35,7 +35,7 @@ class Enemy {
     const intersections = this.raycaster.intersectObjects([
       ...this.game.objects.map((object) => object.object),
       ...this.game.enemies.map((enemy) => enemy.object),
-      this.game.level,
+      this.game.level.object,
       player.boundaries,
     ]);
 

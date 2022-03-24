@@ -27,7 +27,7 @@ const camera = new THREE.PerspectiveCamera(
   150
 );
 camera.rotation.order = "YXZ";
-camera.rotation.y = Math.PI;
+camera.rotation.y = Math.PI / 2;
 
 export const listener = new THREE.AudioListener();
 camera.add(listener);
