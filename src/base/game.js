@@ -66,15 +66,24 @@ class Game {
 
     this.objects = [];
     for (let i = 0; i < parameters.objectsNo; i++) {
-      const object = new Crate(
+      const arenaCrate = new Crate(
         {
           x: (0.5 - Math.random()) * (levelParameters.size / 2 - 2),
           z: (0.5 - Math.random()) * (levelParameters.size / 2 - 2),
         },
         Math.random() * Math.PI * 2
       );
-      this.objects.push(object);
+      this.objects.push(arenaCrate);
     }
+    const corridorCrate1 = new Crate(
+      { x: levelParameters.size / 2 + 3, z: 2 },
+      Math.random() * Math.PI * 2
+    );
+    const corridorCrate2 = new Crate(
+      { x: levelParameters.size / 2 + 8, z: -3 },
+      Math.random() * Math.PI * 2
+    );
+    this.objects.push(corridorCrate1, corridorCrate2);
 
     const player = new Player(
       camera,
@@ -164,7 +173,7 @@ class Game {
     if (key === "m") {
       parameters.enableMouse = !parameters.enableMouse;
     }
-    if (key === "f") {
+    if (["f", "а"].includes(key)) {
       this.player.toogleFlashlight();
     }
     if (key === " ") {
@@ -218,7 +227,7 @@ class Game {
 
   handleKeyUp(e) {
     const key = e.key.toLowerCase();
-    if (parameters.paused) {
+    if (this.paused) {
       return;
     }
     if (key === "shift") {
