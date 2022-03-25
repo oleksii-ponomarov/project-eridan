@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import gsap from "gsap";
 
+import { debug, showResult } from "./gui";
 import { cameraParameters, listener } from "./camera";
 import scene from "./scene";
 import Laser from "../objects/laser";
@@ -20,6 +21,10 @@ audioLoader.load("./sounds/jump-end.mp3", (buffer) => {
 
 class Player {
   constructor(camera, handlers, game) {
+    this.parameters = {
+      flashlight: { color: 0xfff3a3, intensity: 0.75 },
+    };
+
     this.handlers = handlers;
     this.game = game;
 
@@ -37,8 +42,8 @@ class Player {
     player.position.y = cameraParameters.playerHeight;
 
     const flashLight = new THREE.SpotLight(
-      0xffe484,
-      0.5,
+      this.parameters.flashlight.color,
+      this.parameters.flashlight.intensity,
       10,
       Math.PI * 0.2,
       0.2,
@@ -66,6 +71,25 @@ class Player {
     scene.add(player);
     this.object = player;
     this.boundaries = playerBoundaries;
+
+    const playerFolder = debug.addFolder("Player");
+    playerFolder
+      .addColor(this.parameters.flashlight, "color")
+      .name("Flashlight Color")
+      .onChange(
+        () =>
+          (this.flashLight.color = new THREE.Color(
+            this.parameters.flashlight.color
+          ))
+      );
+    playerFolder
+      .add(this.parameters.flashlight, "intensity")
+      .min(0)
+      .max(1)
+      .step(0.01)
+      .onChange(
+        () => (this.flashLight.intensity = this.parameters.flashlight.intensity)
+      );
 
     return this;
   }
@@ -285,6 +309,10 @@ class Player {
     });
     this.hp -= 10;
     setHp(this.hp);
+    if (this.hp <= 0) {
+      this.handlers.pauseGame();
+      showResult(false);
+    }
   }
 }
 

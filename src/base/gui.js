@@ -3,6 +3,16 @@ import * as dat from "lil-gui";
 const debug = new dat.GUI();
 debug.hide();
 
+function showResult(win) {
+  document.body.classList.remove("game-active");
+  const menu = document.createElement("div");
+  menu.classList.add("menu");
+  const congrats = document.createElement("p");
+  congrats.textContent = win ? "Congratulations!" : "You have been killed";
+  menu.append(congrats);
+  document.body.append(menu);
+}
+
 function showMenu({ onStartGame }, newGame = false) {
   document.body.classList.remove("game-active");
   const menu = document.createElement("div");
@@ -74,4 +84,12 @@ function showHit() {
   setTimeout(() => hitOverlay.remove(), 1000);
 }
 
-export { debug, initializeGui, setHp, showHit, showMenu, hideMenu };
+export {
+  debug,
+  initializeGui,
+  setHp,
+  showHit,
+  showMenu,
+  hideMenu,
+  showResult,
+};

@@ -109,12 +109,21 @@ const doorRoughnessTexture = textureLoader.load(
 );
 const doorNormalTexture = textureLoader.load("./textures/door/normal.jpg");
 
+const buttonColorTexture = textureLoader.load("./textures/button/color.jpg");
+const buttonAlphaTexture = textureLoader.load("./textures/button/alpha.jpg");
+const buttonClosedEmissiveTexture = textureLoader.load(
+  "./textures/button/closed/emissive.jpg"
+);
+const buttonOpenEmissiveTexture = textureLoader.load(
+  "./textures/button/open/emissive.jpg"
+);
+
 export const levelParameters = {
   size: 30,
   wallHeight: 4,
   corridorLength: 30 / 3,
   doorOpenDuration: 1,
-  buttonSize: 0.5,
+  buttonSize: 2,
 };
 
 class Level {
@@ -146,11 +155,14 @@ class Level {
     const corridorWallsMaterial = smallWallsMaterial.clone();
     corridorWallsMaterial.emissiveIntensity = 0;
     this.corridorWallsMaterial = corridorWallsMaterial;
-    debug
+
+    const levelFolder = debug.addFolder("Level");
+    levelFolder
       .add(this.corridorWallsMaterial, "emissiveIntensity")
       .min(0)
       .max(1)
       .step(0.01);
+    levelFolder.close();
 
     const ceilingGeometry = new THREE.PlaneGeometry(
       levelParameters.corridorLength,
@@ -235,30 +247,28 @@ class Level {
     const level = new THREE.Group();
     level.name = "level";
 
+    const walls = new THREE.Group();
+
     const wall1 = new THREE.Mesh(wallsGeometry, wallsMaterial);
     wall1.position.z = -levelParameters.size / 2;
-    wall1.position.y = levelParameters.wallHeight / 2;
     wall1.castShadow = true;
     wall1.receiveShadow = true;
 
     const wall2 = new THREE.Mesh(wallsGeometry, wallsMaterial);
     wall2.rotation.y = Math.PI;
     wall2.position.z = levelParameters.size / 2;
-    wall2.position.y = levelParameters.wallHeight / 2;
     wall2.castShadow = true;
     wall2.receiveShadow = true;
 
     const wall3 = new THREE.Mesh(wallsGeometry, wallsMaterial);
     wall3.rotation.y = Math.PI * 0.5;
     wall3.position.x = -levelParameters.size / 2;
-    wall3.position.y = levelParameters.wallHeight / 2;
     wall3.castShadow = true;
     wall3.receiveShadow = true;
 
     const wall4 = new THREE.Mesh(smallWallsGeometry, smallWallsMaterial);
     wall4.rotation.y = -Math.PI * 0.5;
     wall4.position.x = levelParameters.size / 2;
-    wall4.position.y = levelParameters.wallHeight / 2;
     wall4.position.z = levelParameters.size / 3;
     wall4.castShadow = true;
     wall4.receiveShadow = true;
@@ -266,7 +276,6 @@ class Level {
     const wall5 = new THREE.Mesh(smallWallsGeometry, smallWallsMaterial);
     wall5.rotation.y = -Math.PI * 0.5;
     wall5.position.x = levelParameters.size / 2;
-    wall5.position.y = levelParameters.wallHeight / 2;
     wall5.position.z = -levelParameters.size / 3;
     wall5.castShadow = true;
     wall5.receiveShadow = true;
@@ -277,7 +286,6 @@ class Level {
     );
     corridorWall1.position.x =
       levelParameters.size / 2 + levelParameters.corridorLength / 2;
-    corridorWall1.position.y = levelParameters.wallHeight / 2;
     corridorWall1.position.z = -levelParameters.corridorLength / 2;
     corridorWall1.castShadow = true;
     corridorWall1.receiveShadow = true;
@@ -289,7 +297,6 @@ class Level {
     corridorWall2.rotation.y = Math.PI;
     corridorWall2.position.x =
       levelParameters.size / 2 + levelParameters.corridorLength / 2;
-    corridorWall2.position.y = levelParameters.wallHeight / 2;
     corridorWall2.position.z = levelParameters.corridorLength / 2;
     corridorWall2.castShadow = true;
     corridorWall2.receiveShadow = true;
@@ -298,7 +305,6 @@ class Level {
     corridorWallDoor1.rotation.y = (3 * Math.PI) / 2;
     corridorWallDoor1.position.x =
       levelParameters.size / 2 + levelParameters.corridorLength;
-    corridorWallDoor1.position.y = levelParameters.wallHeight / 2;
     corridorWallDoor1.position.z = levelParameters.corridorLength / 4;
     corridorWallDoor1.castShadow = true;
     corridorWallDoor1.receiveShadow = true;
@@ -307,10 +313,22 @@ class Level {
     corridorWallDoor2.rotation.y = (3 * Math.PI) / 2;
     corridorWallDoor2.position.x =
       levelParameters.size / 2 + levelParameters.corridorLength;
-    corridorWallDoor2.position.y = levelParameters.wallHeight / 2;
     corridorWallDoor2.position.z = -levelParameters.corridorLength / 4;
     corridorWallDoor2.castShadow = true;
     corridorWallDoor2.receiveShadow = true;
+
+    walls.add(
+      wall1,
+      wall2,
+      wall3,
+      wall4,
+      wall5,
+      corridorWall1,
+      corridorWall2,
+      corridorWallDoor1,
+      corridorWallDoor2
+    );
+    walls.position.y = levelParameters.wallHeight / 2;
 
     const corridorCeiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
     corridorCeiling.rotation.x = Math.PI / 2;
@@ -374,19 +392,52 @@ class Level {
       levelParameters.size / 2 + levelParameters.corridorLength / 2;
     corridorLight.position.y = levelParameters.wallHeight / 2;
 
-    const openDoorsButton = new THREE.Mesh(
+    const doorButton = new THREE.Group();
+    doorButton.name = "openDoor";
+
+    const doorButtonLight = new THREE.PointLight(0xff0000, 0.3, 4);
+    this.doorButtonLight = doorButtonLight;
+    doorButtonLight.position.z = 1;
+    const doorButtonLightHelper = new THREE.PointLightHelper(doorButtonLight);
+
+    const buttonClosedMaterial = new THREE.MeshStandardMaterial({
+      map: buttonColorTexture,
+      emissiveMap: buttonClosedEmissiveTexture,
+      alphaMap: buttonAlphaTexture,
+      transparent: true,
+    });
+    buttonClosedMaterial.emissive = new THREE.Color(0xff0000);
+    buttonClosedMaterial.emissiveIntensity = 0.75;
+
+    const openDoorsButtonZone = new THREE.Mesh(
       new THREE.BoxGeometry(
-        levelParameters.buttonSize,
-        levelParameters.buttonSize,
-        0.1
+        levelParameters.buttonSize + 1,
+        levelParameters.buttonSize / 2 + 1,
+        0.2
       ),
-      new THREE.MeshStandardMaterial({ color: "red" })
+      new THREE.MeshStandardMaterial({ color: "green", wireframe: true })
     );
-    openDoorsButton.position.x =
+    openDoorsButtonZone.visible = false;
+
+    const openDoorsButton = new THREE.Mesh(
+      new THREE.PlaneGeometry(
+        levelParameters.buttonSize,
+        levelParameters.buttonSize / 2
+      ),
+      buttonClosedMaterial
+    );
+    doorButton.add(
+      openDoorsButtonZone,
+      openDoorsButton,
+      doorButtonLight,
+      doorButtonLightHelper
+    );
+    this.doorButton = openDoorsButton;
+
+    doorButton.position.x =
       levelParameters.size / 2 + levelParameters.corridorLength / 2;
-    openDoorsButton.position.y = levelParameters.wallHeight / 2;
-    openDoorsButton.position.z = -levelParameters.corridorLength / 2;
-    openDoorsButton.name = "openDoor";
+    doorButton.position.y = levelParameters.wallHeight / 2;
+    doorButton.position.z = -levelParameters.corridorLength / 2 + 0.01;
 
     audioLoader.load("./sounds/beep.mp3", (buffer) => {
       const buttonSound = new THREE.PositionalAudio(listener);
@@ -396,22 +447,16 @@ class Level {
       openDoorsButton.add(buttonSound);
     });
 
+    this.lightOn = false;
+
     level.add(
       ground,
-      wall1,
-      wall2,
-      wall3,
-      wall4,
-      wall5,
-      corridorWall1,
-      corridorWall2,
-      corridorWallDoor1,
-      corridorWallDoor2,
+      walls,
       corridorCeiling,
       // corridorLight,
       door1,
       door2,
-      openDoorsButton
+      doorButton
     );
 
     this.object = level;
@@ -436,6 +481,16 @@ class Level {
       z: `-=${this.door2.geometry.parameters.width - 0.5}`,
       onComplete: () => {
         this.doorsOpen = true;
+        const buttonOpenMaterial = new THREE.MeshStandardMaterial({
+          map: buttonColorTexture,
+          alphaMap: buttonAlphaTexture,
+          emissiveMap: buttonOpenEmissiveTexture,
+          transparent: true,
+        });
+        buttonOpenMaterial.emissive = new THREE.Color(0x00ff00);
+        buttonOpenMaterial.emissiveIntensity = 0.75;
+        this.doorButton.material = buttonOpenMaterial;
+        this.doorButtonLight.color = new THREE.Color(0x00ff00);
       },
     });
   }

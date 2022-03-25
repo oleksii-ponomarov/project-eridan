@@ -3,7 +3,7 @@ import * as THREE from "three";
 import scene from "./scene";
 import Crate from "../objects/crate";
 import camera, { cameraParameters } from "./camera";
-import { debug, showMenu, hideMenu, initializeGui } from "./gui";
+import { debug, showMenu, hideMenu, initializeGui, showResult } from "./gui";
 import Enemy from "../objects/enemy";
 import Level, { levelParameters } from "../objects/level";
 import Skybox from "../objects/skybox";
@@ -18,8 +18,10 @@ const parameters = {
   objectsNo: 3,
 };
 
-debug.add(parameters, "attack");
-debug.add(parameters, "moveEnemies");
+const gameFolder = debug.addFolder("Game");
+gameFolder.add(parameters, "attack");
+gameFolder.add(parameters, "moveEnemies");
+gameFolder.close();
 
 class Game {
   constructor() {
@@ -79,6 +81,7 @@ class Game {
       {
         killEnemy: (id) => this.killEnemy(id),
         blowObject: (id) => this.blowObject(id),
+        pauseGame: () => this.pause(),
       },
       this
     );
@@ -148,7 +151,8 @@ class Game {
     if (["e", "у"].includes(key)) {
       if (
         this.currentIntersect &&
-        this.currentIntersect[0].object.name === "openDoor"
+        this.currentIntersect[0].object.parent.name === "openDoor" &&
+        this.currentIntersect[0].distance <= 2
       ) {
         this.level.buttonSound.play();
         this.level.openDoors();
@@ -316,6 +320,10 @@ class Game {
     const enemyToKill = this.enemies.find((enemy) => enemy.id === id);
     scene.remove(enemyToKill.object);
     this.enemies = this.enemies.filter((enemy) => enemy.id !== id);
+    if (!this.enemies.length) {
+      this.pause();
+      showResult(true);
+    }
   }
 
   blowObject(id) {

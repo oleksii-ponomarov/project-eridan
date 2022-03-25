@@ -23,8 +23,16 @@ body {
   overflow: hidden;
 }
 
+body {
+  color: #ffffff;
+}
+
 body.game-active {
   cursor: none;
+}
+
+p {
+  font-size: 2rem;
 }
 
 .webgl {

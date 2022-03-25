@@ -32,13 +32,9 @@ camera.rotation.y = Math.PI / 2;
 export const listener = new THREE.AudioListener();
 camera.add(listener);
 
-debug
-  .add(cameraParameters, "playerHeight")
-  .min(0.2)
-  .max(2)
-  .step(0.01)
-  .onChange(() => (camera.position.y = parameters.playerHeight));
-debug.add(cameraParameters, "mouseSensitivity").min(0.001).max(1).step(0.001);
-debug.add(cameraParameters, "zeroZone").min(0).max(0.5).step(0.01);
+const mouseFolder = debug.addFolder("Mouse");
+mouseFolder.add(cameraParameters, "mouseSensitivity").min(0.001).max(1).step(0.001);
+mouseFolder.add(cameraParameters, "zeroZone").min(0).max(0.5).step(0.01);
+mouseFolder.close();
 
 export default camera;

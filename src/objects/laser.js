@@ -119,10 +119,6 @@ class Laser {
     if (target.object.name === "player") {
       target.object.hp -= 10;
       this.handlers.woundPlayer();
-      if (target.object.hp <= 0) {
-        console.log("you`re dead");
-        this.handlers.pauseGame();
-      }
     }
   }
 }
