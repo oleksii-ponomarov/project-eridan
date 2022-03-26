@@ -3,6 +3,8 @@ Kill all the white enemies! Use crates to hide behind them but remember that the
 
 This FPS shooter game is created as a spin-off from the [Three.js Journey](https://threejs-journey.com) course by [Bruno Simon](https://bruno-simon.com)
 
+[Play](https://project-eridan.vercel.app/)
+
 ## Controls
 - WASD - move
 - Left-Click: fire
