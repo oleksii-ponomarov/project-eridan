@@ -100,8 +100,7 @@ class Game {
   }
 
   init() {
-    scene.add(this.skybox);
-    scene.add(this.level.object);
+    scene.add(this.skybox, this.level.object, this.level.walls);
     for (const enemy of this.enemies) {
       scene.add(enemy.object);
     }
@@ -163,8 +162,7 @@ class Game {
         this.currentIntersect[0].object.parent.name === "openDoor" &&
         this.currentIntersect[0].distance <= 2
       ) {
-        this.level.buttonSound.play();
-        this.level.openDoors();
+        this.level.clickButton();
       }
     }
     if (key === "z") {
@@ -273,6 +271,7 @@ class Game {
       ...this.objects.map((object) => object.object),
       ...this.enemies.map((enemy) => enemy.object),
       this.level.object,
+      this.level.walls,
       this.skybox,
     ]);
 

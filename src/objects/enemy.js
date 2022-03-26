@@ -1,6 +1,5 @@
 import * as THREE from "three";
 
-import scene from "../base/scene";
 import Laser from "../objects/laser";
 
 class Enemy {
@@ -35,6 +34,7 @@ class Enemy {
     const intersections = this.raycaster.intersectObjects([
       ...this.game.objects.map((object) => object.object),
       ...this.game.enemies.map((enemy) => enemy.object),
+      this.game.level.walls,
       this.game.level.object,
       player.boundaries,
     ]);

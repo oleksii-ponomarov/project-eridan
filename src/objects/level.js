@@ -123,7 +123,7 @@ export const levelParameters = {
   wallHeight: 4,
   corridorLength: 30 / 3,
   doorOpenDuration: 1,
-  buttonSize: 2,
+  buttonSize: 1.5,
 };
 
 class Level {
@@ -347,7 +347,6 @@ class Level {
     ]);
     door1.rotation.y = Math.PI / 2;
     door1.position.x = levelParameters.size / 2 + 0.3;
-    door1.position.y = levelParameters.wallHeight / 2;
     door1.position.z = levelParameters.corridorLength / 4;
     door1.receiveShadow = true;
 
@@ -361,7 +360,6 @@ class Level {
     ]);
     door2.rotation.y = Math.PI / 2;
     door2.position.x = levelParameters.size / 2 + 0.3;
-    door2.position.y = levelParameters.wallHeight / 2;
     door2.position.z = -levelParameters.corridorLength / 4;
     door2.receiveShadow = true;
 
@@ -398,7 +396,6 @@ class Level {
     const doorButtonLight = new THREE.PointLight(0xff0000, 0.3, 4);
     this.doorButtonLight = doorButtonLight;
     doorButtonLight.position.z = 1;
-    const doorButtonLightHelper = new THREE.PointLightHelper(doorButtonLight);
 
     const buttonClosedMaterial = new THREE.MeshStandardMaterial({
       map: buttonColorTexture,
@@ -412,7 +409,7 @@ class Level {
     const openDoorsButtonZone = new THREE.Mesh(
       new THREE.BoxGeometry(
         levelParameters.buttonSize + 1,
-        levelParameters.buttonSize / 2 + 1,
+        levelParameters.buttonSize + 1,
         0.2
       ),
       new THREE.MeshStandardMaterial({ color: "green", wireframe: true })
@@ -422,16 +419,11 @@ class Level {
     const openDoorsButton = new THREE.Mesh(
       new THREE.PlaneGeometry(
         levelParameters.buttonSize,
-        levelParameters.buttonSize / 2
+        levelParameters.buttonSize
       ),
       buttonClosedMaterial
     );
-    doorButton.add(
-      openDoorsButtonZone,
-      openDoorsButton,
-      doorButtonLight,
-      doorButtonLightHelper
-    );
+    doorButton.add(openDoorsButtonZone, openDoorsButton, doorButtonLight);
     this.doorButton = openDoorsButton;
 
     doorButton.position.x =
@@ -447,21 +439,22 @@ class Level {
       openDoorsButton.add(buttonSound);
     });
 
-    this.lightOn = false;
+    walls.add(door1, door2);
+    level.add(ground, corridorCeiling, doorButton);
 
-    level.add(
-      ground,
-      walls,
-      corridorCeiling,
-      // corridorLight,
-      door1,
-      door2,
-      doorButton
-    );
+    for (const mesh of [...level.children, ...walls.children]) {
+      mesh.boundaries = new THREE.Box3().setFromObject(mesh);
+    }
 
     this.object = level;
+    this.walls = walls;
 
     return this;
+  }
+
+  clickButton() {
+    this.buttonSound.play();
+    this.openDoors();
   }
 
   openDoors() {
@@ -491,6 +484,8 @@ class Level {
         buttonOpenMaterial.emissiveIntensity = 0.75;
         this.doorButton.material = buttonOpenMaterial;
         this.doorButtonLight.color = new THREE.Color(0x00ff00);
+        this.door1.boundaries = new THREE.Box3().setFromObject(this.door1);
+        this.door2.boundaries = new THREE.Box3().setFromObject(this.door2);
       },
     });
   }
