@@ -115,6 +115,11 @@ class Game {
           window.addEventListener("click", () => this.handleClick.call(this));
           this.menuIsShown = false;
           this.started = true;
+          window.onbeforeunload = (e) => {
+            e.preventDefault();
+            console.log("aaaa");
+            e.returnValue = "Do you really want to quit the game?";
+          };
         },
       },
       true
